@@ -56,32 +56,35 @@ int handling_line(char *str)
 
 int main (int argc, char * argv[])
 {  
-
+	errno = 0;
 	FILE * fp;
 	fp = fopen (argv[1],"r");
-	
-	FILE * file_filter;
-	file_filter = fopen (argv[2],"r");
 	
 	if (fp == NULL) { 						//вывод ошибок
         perror(argv[1]);
         exit(errno);
     }
+
+	errno = 0;
+	FILE * file_filter;
+	file_filter = fopen (argv[2],"r");
 	
-		
 	if (file_filter == NULL) { 				//вывод ошибок
         perror(argv[2]);
         exit(errno);
     }
 	
-	char *point_filter;
-	char string_filter[N];
-	point_filter = fgets(string_filter, N, file_filter);
+
+	//char string_filter[N];
+	//string_filter = fgets(string_filter, N, file_filter);
+	size_t len_filter;
+	char * string_filter = NULL;
+	getline(&string_filter, &len_filter, file_filter);
 	int counter;
 	// читаем от 2 слова
 
 	for (counter = 0; logins[counter][0] != '\0'; counter++) {
-		point_logins[counter] = read_n_word(point_filter, counter + 2, logins[counter]);
+		point_logins[counter] = read_n_word(string_filter, counter + 2, logins[counter]);
 	}
 	
 	/*
@@ -89,28 +92,21 @@ int main (int argc, char * argv[])
 		printf("%s\n", point_logins[counter]);
 	}
 	*/
-	char string[N], *rline;
-	int first_line = 1;
 	
-	/*
-	while ((rline = fgets(string, N, fp)) != NULL) {
-		if (!first_line) {
-			handling_line(rline);
-		}
-		else {
-			first_line = 0;
-		}
-	}
-	*/
+	//char string[N];
+	int first_line = 1;
 	char res[N];
 	char *pres;
-	while ((rline = fgets(string, N, fp)) != NULL) {
+	
+	char * string = NULL;
+	//while ((rline = fgets(string, N, fp)) != NULL) {
+	while ((getline(&string, &len_filter, fp)) != -1) {
 		if (!first_line) {
-			pres = read_n_word(rline, 2, res);
+			pres = read_n_word(string, 2, res);
 			for (counter = 0; *point_logins[counter] != '\0'; ++counter) {
 				if (!strcmp(point_logins[counter], pres)) {
 					printf("%s ", pres);
-					pres = read_n_word(rline, 16, res);
+					pres = read_n_word(string, 16, res);
 					printf("%s\n", pres);
 				}
 			}
